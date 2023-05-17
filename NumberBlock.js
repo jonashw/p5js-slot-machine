@@ -54,8 +54,9 @@ class NumberBlock {
     this.updating = !this.updating;
     if (this.updating) {
       this.i = this.#nextIndex();
+    } else {
+      VibrationPattern.shock();
     }
-    
   }
 
   containsPoint(x, y) {
