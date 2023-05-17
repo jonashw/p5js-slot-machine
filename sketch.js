@@ -87,7 +87,7 @@ function update() {
     return;
   }
   for (let b of puzzle.blocks) {
-    //b.update();
+    b.update();
   }
 }
 
