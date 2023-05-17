@@ -87,7 +87,7 @@ function update() {
     return;
   }
   for (let b of puzzle.blocks) {
-    //b.update();
+    b.update();
   }
 }
 
@@ -105,7 +105,7 @@ function winStatusInvalidated() {
   let win = puzzle.tryGetWin();
   if (!!win) {
     puzzle.winAnimation();
-    buzzer(win.number);
+    VibrationPattern.buzzer(2);
     setTimeout(() => {
       let nextPuzzle = puzzles[(puzzles.indexOf(puzzle) + 1) % puzzles.length];
       puzzle = nextPuzzle;
@@ -113,15 +113,6 @@ function winStatusInvalidated() {
       puzzle.welcomeAnimation();
     }, 1000);
     //alert("You win!");
-  }
-}
-function buzzer(n) {
-  if (!!navigator.vibrate && !!vibrationPatterns) {
-    let pattern = vibrationPatterns.n[n];
-    if (!!pattern) {
-      console.log({ pattern });
-      navigator.vibrate(pattern);
-    }
   }
 }
 
