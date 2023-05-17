@@ -29,11 +29,15 @@ class NumberBlock {
     i,
     updating,
     lockedToPlayer,
+    progressOnClick,
     row,
     col,
     hueSeed,
     domain,
+    sounds,
   }) {
+    this.sounds = sounds;
+    this.progressOnClick = boolOrDefault(progressOnClick, true);
     this.i = isNaN(i) ? 0 : i;
     this.w = isNaN(w) ? 250 : w;
     this.h = isNaN(h) ? 250 : h;
@@ -51,11 +55,16 @@ class NumberBlock {
     if (this.lockedToPlayer) {
       return;
     }
-    this.updating = !this.updating;
-    if (this.updating) {
-      this.i = this.#nextIndex();
-    } else {
-      VibrationPattern.shock();
+    if (this.progressOnClick) {
+      this.updating = !this.updating;
+      if (this.updating) {
+        this.i = this.#nextIndex();
+      }
+    }
+
+    VibrationPattern.shock();
+    if (!!this.sounds && this.label in this.sounds) {
+      this.sounds[this.label].play();
     }
   }
 

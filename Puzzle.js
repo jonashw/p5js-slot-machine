@@ -2,16 +2,33 @@ const numberOrDefault = (value, defaultValue) =>
   isNaN(value) ? defaultValue : value;
 
 class Puzzle {
-  constructor({ width, height, rows, cols, lockedToPlayer, domain }) {
+  constructor({
+    width,
+    height,
+    rows,
+    cols,
+    lockedToPlayer,
+    domain,
+    autoUpdate,
+    progressOnClick,
+    sounds,
+  }) {
+    this.sounds = typeof sounds === "object" ? sounds : {};
     this.rows = numberOrDefault(rows, 1);
     this.cols = numberOrDefault(cols, 1);
     this.width = numberOrDefault(width, 100);
     this.height = numberOrDefault(height, 100);
     this.domain = Array.isArray(domain) ? domain : [1, 2];
+    this.progressOnClick =
+      progressOnClick === null || progressOnClick === undefined
+        ? true
+        : !!progressOnClick;
     //fixed: { 1: { 1: 1 } }
     this.lockedToPlayer =
       typeof lockedToPlayer === "object" ? lockedToPlayer : {};
     let hueSeed = Math.random();
+    this.autoUpdate =
+      autoUpdate === null || autoUpdate === undefined ? true : !!autoUpdate;
     this.blocks = Array(this.cols)
       .fill()
       .flatMap((_, col) =>
@@ -19,7 +36,7 @@ class Puzzle {
           .fill()
           .map((_, row) => {
             let i = col + row * this.cols;
-            let updating = true;
+            let updating = this.autoUpdate;
             let isLockedToPlayer = false;
 
             let lockedIndex = this.lockedToPlayer[`${col},${row}`];
@@ -36,9 +53,11 @@ class Puzzle {
 
             return new NumberBlock({
               domain: this.domain,
+              sounds: this.sounds,
               hueSeed,
               updating,
               lockedToPlayer: isLockedToPlayer,
+              progressOnClick,
               row,
               col,
               i,
@@ -58,8 +77,20 @@ class Puzzle {
     );
   }
 
+  update() {
+    if (!this.autoUpdate) {
+      return;
+    }
+    for (let b of this.blocks) {
+      b.update();
+    }
+  }
+
   setup() {
     console.log("setup", this);
+    if (!this.autoUpdate) {
+      return;
+    }
     for (let b of this.blocks) {
       b.updating = !b.lockedToPlayer;
     }

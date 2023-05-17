@@ -1,5 +1,5 @@
 const everyNthFrame = 50;
-
+let yesNoSounds = {};
 let range = (from, to) =>
   Array(to - from + 1)
     .fill()
@@ -16,6 +16,13 @@ const randRange = (arr, n) => {
   return indexes.map((i) => arr[i]);
 };
 const puzzleSpecs = [
+  {
+    domain: ["yes", "no"],
+    sounds: yesNoSounds,
+    rows: 2,
+    autoUpdate: false,
+    progressOnClick: false,
+  },
   {
     rows: 2,
     domain: randRange(emojis, 2),
@@ -49,6 +56,17 @@ let puzzle = puzzles[0];
 let puzzleSpec = puzzle.spec;
 
 function setup() {
+  Object.assign(
+    yesNoSounds,
+    Object.fromEntries(
+      ["yes", "no"].map((k) => [
+        k,
+        loadSound(
+          `https://storage.googleapis.com/jonashw-dev-personal-website-public-data/game-assets/${k}.mp3`
+        ),
+      ])
+    )
+  );
   createCanvas(windowWidth, windowHeight);
   colorMode(HSB, 100);
   puzzles = puzzleSpecs.map(
@@ -86,9 +104,7 @@ function update() {
   if (frameCount % everyNthFrame !== 0) {
     return;
   }
-  for (let b of puzzle.blocks) {
-    b.update();
-  }
+  puzzle.update();
 }
 
 function mouseClicked() {
