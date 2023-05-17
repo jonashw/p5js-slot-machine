@@ -1,6 +1,15 @@
 const numberOrDefault = (value, defaultValue) =>
   isNaN(value) ? defaultValue : value;
 
+const loadSounds = (narrator, words) =>
+  Object.fromEntries(
+    words.map((word) => {
+      let url = `https://us-west1-jonashw-dev-personal-website.cloudfunctions.net/jonashw-dev-speech-synthesis-proxy?lang=${narrator}&msg=${word}`;
+      //let url = `https://storage.googleapis.com/jonashw-dev-speech-synthesis/${lang}-${word}.mp3`;
+      return [word, loadSound(url)];
+    })
+  );
+
 class Puzzle {
   constructor({
     width,
@@ -11,9 +20,9 @@ class Puzzle {
     domain,
     autoUpdate,
     progressOnClick,
-    sounds,
+    narrator,
   }) {
-    this.sounds = typeof sounds === "object" ? sounds : {};
+    this.sounds = !!narrator ? loadSounds(narrator, domain) : {};
     this.rows = numberOrDefault(rows, 1);
     this.cols = numberOrDefault(cols, 1);
     this.width = numberOrDefault(width, 100);
