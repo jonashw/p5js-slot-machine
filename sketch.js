@@ -17,9 +17,9 @@ const randRange = (arr, n) => {
 };
 const puzzleSpecs = [
   {
-    domain: ["yes", "no"],
-    sounds: yesNoSounds,
-    rows: 2,
+    domain: ["yes", "no", "maybe"],
+    narrator: "Amy",
+    rows: 3,
     autoUpdate: false,
     progressOnClick: false,
   },
@@ -43,6 +43,7 @@ const puzzleSpecs = [
   {
     rows: 2,
     cols: 2,
+    narrator: "Brian",
     domain: range(1, 4),
     lockedToPlayer: { "0,1": 2 },
     autoUpdate: false,
@@ -56,17 +57,6 @@ let puzzle = puzzles[0];
 let puzzleSpec = puzzle.spec;
 
 function setup() {
-  Object.assign(
-    yesNoSounds,
-    Object.fromEntries(
-      ["yes", "no"].map((k) => [
-        k,
-        loadSound(
-          `https://storage.googleapis.com/jonashw-dev-personal-website-public-data/game-assets/${k}.mp3`
-        ),
-      ])
-    )
-  );
   createCanvas(windowWidth, windowHeight);
   colorMode(HSB, 100);
   puzzles = puzzleSpecs.map(
@@ -80,7 +70,6 @@ function setup() {
   console.log(Hsluv);
   window.Hsluv = Hsluv;
   puzzle = puzzles[0];
-
   puzzle.setup();
 }
 function deviceMoved() {
