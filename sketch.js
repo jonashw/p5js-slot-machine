@@ -17,9 +17,10 @@ const randRange = (arr, n) => {
 };
 const puzzleSpecs = [
   {
-    domain: ["yes", "no", "maybe"],
+    domain: ["yes", "no", "maybe", "ok"],
     narrator: "Amy",
-    rows: 3,
+    rows: 2,
+    cols: 2,
     autoUpdate: false,
     progressOnClick: false,
   },
@@ -96,9 +97,23 @@ function update() {
   puzzle.update();
 }
 
+function touchStarted() {
+  let touch = touches[touches.length - 1];
+  console.log(touch);
+  pixelTouched(touch.x, touch.y);
+}
+
+function touchEnded() {
+  return false;
+}
+
 function mouseClicked() {
+  pixelTouched(mouseX, mouseY);
+}
+
+function pixelTouched(x, y) {
   for (let b of puzzle.blocks) {
-    if (!b.containsPoint(mouseX, mouseY)) {
+    if (!b.containsPoint(x, y)) {
       continue;
     }
     b.mouseClicked();
