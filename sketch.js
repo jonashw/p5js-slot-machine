@@ -19,8 +19,7 @@ const puzzleSpecs = [
   {
     domain: ["yes", "no", "maybe", "ok"],
     narrator: "Amy",
-    rows: 2,
-    cols: 2,
+    rows: 4,
     autoUpdate: false,
     progressOnClick: false,
   },
@@ -85,9 +84,7 @@ function deviceShaken() {
 
 function draw() {
   update();
-  for (let b of puzzle.blocks) {
-    b.draw();
-  }
+  puzzle.draw();
 }
 
 function update() {
@@ -99,12 +96,18 @@ function update() {
 
 function touchStarted() {
   let touch = touches[touches.length - 1];
+  if (!touch) {
+    return;
+  }
   console.log(touch);
   pixelTouched(touch.x, touch.y);
 }
 
 function touchEnded() {
   return false;
+}
+function keyPressed() {
+  puzzle.keyPressed(key);
 }
 
 function mouseClicked() {

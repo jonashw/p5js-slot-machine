@@ -1,6 +1,50 @@
 const numberOrDefault = (value, defaultValue) =>
   isNaN(value) ? defaultValue : value;
 
+let narratorsByLanguage = {
+  Arabic: ["Zeina"],
+  "Australian English": ["Russell", "Nicole"],
+  "Brazilian Portuguese": ["Vitoria", "Camila", "Ricardo"],
+  "British English": ["Emma", "Brian", "Amy"],
+  "Canadian French": ["Chantal"],
+  "Castilian Spanish": ["Conchita", "Lucia", "Enrique"],
+  "Chinese Mandarin": ["Zhiyu"],
+  Danish: ["Naja", "Mads"],
+  Dutch: ["Ruben", "Lotte"],
+  French: ["Celine", "Lea", "Mathieu"],
+  German: ["Hans", "Vicki", "Marlene"],
+  Icelandic: ["Dora", "Karl"],
+  "Indian English": ["Aditi", "Raveena"],
+  Italian: ["Bianca", "Carla", "Giorgio"],
+  Japanese: ["Takumi", "Mizuki"],
+  Korean: ["Seoyeon"],
+  "Mexican Spanish": ["Mia"],
+  Norwegian: ["Liv"],
+  Polish: ["Jacek", "Jan", "Maja", "Ewa"],
+  Portuguese: ["Cristiano", "Ines"],
+  Romanian: ["Carmen"],
+  Russian: ["Maxim", "Tatyana"],
+  Swedish: ["Astrid"],
+  Turkish: ["Filiz"],
+  "US English": [
+    "Salli",
+    "Ivy",
+    "Joey",
+    "Matthew",
+    "Kimberly",
+    "Kendra",
+    "Justin",
+    "Joanna",
+  ],
+  "US Spanish": ["Lupe", "Penelope", "Miguel"],
+  Welsh: ["Gwyneth"],
+  "Welsh English": ["Geraint"],
+};
+
+let narrators = Object.values(narratorsByLanguage).flatMap((ns) => ns);
+let choiceNarrators = ["British English", "US English", "US Spanish"].flatMap(
+  (k) => narratorsByLanguage[k]
+);
 const loadSounds = (narrator, words) =>
   Object.fromEntries(
     words.map((word) => {
@@ -22,7 +66,8 @@ class Puzzle {
     progressOnClick,
     narrator,
   }) {
-    this.sounds = !!narrator ? loadSounds(narrator, domain) : {};
+    this.sounds = {};
+    this.narrator = narrator;
     this.rows = numberOrDefault(rows, 1);
     this.cols = numberOrDefault(cols, 1);
     this.width = numberOrDefault(width, 100);
@@ -86,6 +131,23 @@ class Puzzle {
     );
   }
 
+  draw() {
+    for (let b of this.blocks) {
+      b.draw();
+    }
+    if (!!this.narrator) {
+      fill(0);
+      textStyle(BOLD);
+      textSize(20);
+
+      //let tw = textWidth(this.label);
+      //let th = textAscent() + textDescent();
+      textAlign(CENTER, CENTER);
+      textAlign();
+      text(this.narrator, width / 2, height / 2);
+    }
+  }
+
   update() {
     if (!this.autoUpdate) {
       return;
@@ -96,20 +158,41 @@ class Puzzle {
   }
 
   setup() {
-    console.log("setup", this);
-    if (!this.autoUpdate) {
-      return;
+    if (this.autoUpdate) {
+      for (let b of this.blocks) {
+        b.updating = !b.lockedToPlayer;
+      }
     }
-    for (let b of this.blocks) {
-      b.updating = !b.lockedToPlayer;
+    if (!!this.narrator) {
+      let sounds = loadSounds(this.narrator, this.domain);
+      Object.assign(this.sounds, sounds);
+      console.log("Puzzle.setup:sounds", this.sounds);
+    }
+    console.log("setup", this);
+  }
+  keyPressed(key) {
+    console.log(key);
+    if (key === "n") {
+      this.randomNarrator();
     }
   }
+  randomNarrator() {
+    let otherNarrators = choiceNarrators.filter((n) => n !== this.narrator);
+    this.narrator =
+      otherNarrators[Math.floor(otherNarrators.length * Math.random())];
+    console.log("new narrator: ", this.narrator);
+    this.setup();
+  }
   deviceShaken() {
-    for (let b of this.blocks) {
-      if (b.updating) {
-        continue;
+    if (this.autoUpdate) {
+      for (let b of this.blocks) {
+        if (b.updating) {
+          continue;
+        }
+        b.deviceShaken();
       }
-      b.deviceShaken();
+    } else {
+      this.randomNarrator();
     }
   }
   winConditionMet() {
