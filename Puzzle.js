@@ -94,7 +94,7 @@ class Puzzle {
     //fixed: { 1: { 1: 1 } }
     this.lockedToPlayer =
       typeof lockedToPlayer === "object" ? lockedToPlayer : {};
-    this.hueSeed = Math.random();
+    this.hueSeed = 1.0; //Math.random();
     this.autoUpdate =
       autoUpdate === null || autoUpdate === undefined ? true : !!autoUpdate;
     this.blocks = [];
@@ -119,7 +119,11 @@ class Puzzle {
       //let th = textAscent() + textDescent();
       textAlign(CENTER, CENTER);
       textAlign();
-      text(this.narrator + ` (${this.lang})`, width / 2, height / 2);
+      text(
+        this.narrator + ` (${this.lang}) (${this.hueSeed})`,
+        width / 2,
+        height / 2
+      );
     }
   }
 
