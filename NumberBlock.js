@@ -33,7 +33,7 @@ class NumberBlock {
     row,
     col,
     hueSeed,
-    domain,
+    words,
     sounds,
   }) {
     this.sounds = sounds;
@@ -43,7 +43,7 @@ class NumberBlock {
     this.h = isNaN(h) ? 250 : h;
     this.x = isNaN(x) ? 50 : x;
     this.y = isNaN(y) ? 50 : y;
-    this.domain = domain;
+    this.words = words;
     this.lockedToPlayer = isNaN(lockedToPlayer) ? 0 : lockedToPlayer;
     this.updating = boolOrDefault(updating, !this.lockedToPlayer);
     this.row = isNaN(row) ? 0 : row;
@@ -76,7 +76,7 @@ class NumberBlock {
   draw() {
     let { x, y, w, h, i, hueSeed } = this;
 
-    let hue = (hueSeed * (i / this.domain.length) * 100) % 100;
+    let hue = (hueSeed * (i / this.words.length) * 100) % 100;
     let color = [hue, 70, 90];
     noStroke();
     fill(color);
@@ -105,13 +105,13 @@ class NumberBlock {
     text(this.label, x + w / 2, y + h / 2);
   }
   get label() {
-    return this.domain[this.i % this.domain.length];
+    return this.words[this.i % this.words.length];
   }
   #nextIndex() {
-    return (this.i + 1) % this.domain.length;
+    return (this.i + 1) % this.words.length;
   }
   #randomIndex() {
-    return Math.floor(Math.random() * this.domain.length);
+    return Math.floor(Math.random() * this.words.length);
   }
   update() {
     if (!this.updating) {

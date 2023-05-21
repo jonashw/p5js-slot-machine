@@ -17,44 +17,30 @@ const randRange = (arr, n) => {
 };
 const puzzleSpecs = [
   {
-    domain: ["yes", "no", "maybe", "ok"],
-    narrator: "Amy",
-    rows: 4,
+    domain: {
+      "US English":
+        "yes,no,maybe,ok,of course,NO WAY!,I farted!,PICKLES!!!,me name na-na,I'm tired".split(
+          ","
+        ),
+      "US Spanish":
+        "sí,no,tal vez,bueno,porsopuesto,NUNCA!,hice un pedo,pepinos!!!,me llamo nana,tengo sueño".split(
+          ","
+        ),
+    },
+    narrators: {
+      "US English": "Ivy Matthew Salli Justin".split(" "),
+      "US Spanish": "Lupe Miguel".split(" "),
+    },
+    rows: 10,
+    cols: 1,
     autoUpdate: false,
     progressOnClick: false,
   },
-  {
-    rows: 2,
-    domain: randRange(emojis, 2),
-    lockedToPlayer: { "0,0": 0 },
-  },
-  {
-    cols: 3,
-    domain: randRange(emojis, 3),
-    autoUpdate: false,
-    lockedToPlayer: { "1,0": 1 },
-  },
-  {
-    rows: 2,
-    domain: ["Yes", "No"],
-    lockedToPlayer: { "0,1": 0 },
-    autoUpdate: false,
-  },
-  {
-    rows: 2,
-    cols: 2,
-    narrator: "Brian",
-    domain: range(1, 4),
-    lockedToPlayer: { "0,1": 2 },
-    autoUpdate: false,
-  },
-  { rows: 3, cols: 3, domain: range(1, 3), lockedToPlayer: { "1,1": 2 } },
 ];
 
 /* eslint-disable no-undef, no-unused-vars */
-let puzzles = [Puzzle.nullObject()];
-let puzzle = puzzles[0];
-let puzzleSpec = puzzle.spec;
+let puzzles = [];
+let puzzle = undefined;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -67,6 +53,7 @@ function setup() {
         height,
       })
   );
+  console.log(puzzleSpecs);
   console.log(Hsluv);
   window.Hsluv = Hsluv;
   puzzle = puzzles[0];
@@ -78,23 +65,27 @@ function deviceMoved() {
 }
 
 function deviceShaken() {
+  if (!puzzle) {
+    return;
+  }
   puzzle.deviceShaken();
   winStatusInvalidated();
 }
 
 function draw() {
-  update();
+  if (!puzzle) {
+    return;
+  }
+  if (frameCount % everyNthFrame == 0) {
+    puzzle.update();
+  }
   puzzle.draw();
 }
 
-function update() {
-  if (frameCount % everyNthFrame !== 0) {
+function touchStarted() {
+  if (!puzzle) {
     return;
   }
-  puzzle.update();
-}
-
-function touchStarted() {
   let touch = touches[touches.length - 1];
   if (!touch) {
     return;
@@ -107,6 +98,9 @@ function touchEnded() {
   return false;
 }
 function keyPressed() {
+  if (!puzzle) {
+    return;
+  }
   puzzle.keyPressed(key);
 }
 
@@ -115,6 +109,9 @@ function mouseClicked() {
 }
 
 function pixelTouched(x, y) {
+  if (!puzzle) {
+    return;
+  }
   for (let b of puzzle.blocks) {
     if (!b.containsPoint(x, y)) {
       continue;
@@ -125,6 +122,9 @@ function pixelTouched(x, y) {
 }
 
 function winStatusInvalidated() {
+  if (!puzzle) {
+    return;
+  }
   let win = puzzle.tryGetWin();
   if (!!win) {
     puzzle.winAnimation();
@@ -142,4 +142,8 @@ function winStatusInvalidated() {
 // This Redraws the Canvas when resized
 windowResized = function () {
   resizeCanvas(windowWidth, windowHeight);
+  if (!puzzle) {
+    return;
+  }
+  puzzle.setup();
 };

@@ -40,11 +40,17 @@ let narratorsByLanguage = {
   Welsh: ["Gwyneth"],
   "Welsh English": ["Geraint"],
 };
-
-let narrators = Object.values(narratorsByLanguage).flatMap((ns) => ns);
+let languageByNarrator = Object.fromEntries(
+  Object.entries(narratorsByLanguage).flatMap(([lang, ns]) =>
+    ns.map((n) => [n, lang])
+  )
+);
+console.log(languageByNarrator);
+let allNarrators = Object.values(narratorsByLanguage).flatMap((ns) => ns);
 let choiceNarrators = ["British English", "US English", "US Spanish"].flatMap(
   (k) => narratorsByLanguage[k]
 );
+choiceNarrators = ["Brian", "Salli", "Justin", "Ivy", "Lupe", "Miguel"];
 const loadSounds = (narrator, words) =>
   Object.fromEntries(
     words.map((word) => {
@@ -64,15 +70,23 @@ class Puzzle {
     domain,
     autoUpdate,
     progressOnClick,
-    narrator,
+    narrators,
   }) {
     this.sounds = {};
-    this.narrator = narrator;
+    this.narrators = narrators;
+    console.log({ narrators });
+    this.narrator = "Brian";
+    this.words = [1, 2, 3, 4];
+    this.narrators = Object.values(narrators).flatMap((ns) => ns);
+    this.narrator = this.narrators[0];
+    this.lang = languageByNarrator[this.narrator];
+    this.domain = domain;
+    this.words = domain[this.lang];
     this.rows = numberOrDefault(rows, 1);
     this.cols = numberOrDefault(cols, 1);
     this.width = numberOrDefault(width, 100);
     this.height = numberOrDefault(height, 100);
-    this.domain = Array.isArray(domain) ? domain : [1, 2];
+
     this.progressOnClick =
       progressOnClick === null || progressOnClick === undefined
         ? true
@@ -80,49 +94,10 @@ class Puzzle {
     //fixed: { 1: { 1: 1 } }
     this.lockedToPlayer =
       typeof lockedToPlayer === "object" ? lockedToPlayer : {};
-    let hueSeed = Math.random();
+    this.hueSeed = Math.random();
     this.autoUpdate =
       autoUpdate === null || autoUpdate === undefined ? true : !!autoUpdate;
-    this.blocks = Array(this.cols)
-      .fill()
-      .flatMap((_, col) =>
-        Array(this.rows)
-          .fill()
-          .map((_, row) => {
-            let i = col + row * this.cols;
-            let updating = this.autoUpdate;
-            let isLockedToPlayer = false;
-
-            let lockedIndex = this.lockedToPlayer[`${col},${row}`];
-            if (lockedIndex !== undefined && lockedIndex !== null) {
-              if (0 <= lockedIndex && lockedIndex < this.domain.length) {
-                i = lockedIndex;
-                updating = false;
-                isLockedToPlayer = true;
-              } else {
-                i = 0;
-                updating = false;
-              }
-            }
-
-            return new NumberBlock({
-              domain: this.domain,
-              sounds: this.sounds,
-              hueSeed,
-              updating,
-              lockedToPlayer: isLockedToPlayer,
-              progressOnClick,
-              row,
-              col,
-              i,
-              x: col * (this.width / this.cols),
-              y: row * (this.height / this.rows),
-              w: this.width / this.cols,
-              h: this.height / this.rows,
-            });
-          })
-      );
-
+    this.blocks = [];
     this.spec = Object.fromEntries(
       ["width", "cols", "height", "rows", "nMax", "lockedToPlayer"].map((k) => [
         k,
@@ -144,7 +119,7 @@ class Puzzle {
       //let th = textAscent() + textDescent();
       textAlign(CENTER, CENTER);
       textAlign();
-      text(this.narrator, width / 2, height / 2);
+      text(this.narrator + ` (${this.lang})`, width / 2, height / 2);
     }
   }
 
@@ -158,28 +133,73 @@ class Puzzle {
   }
 
   setup() {
+    if (!!this.narrator) {
+      let sounds = loadSounds(this.narrator, this.words);
+      Object.assign(this.sounds, sounds);
+      console.log("Puzzle.setup:sounds", this.sounds);
+    }
+    console.log("setup", this);
+    this.blocks = Array(this.cols)
+      .fill()
+      .flatMap((_, col) =>
+        Array(this.rows)
+          .fill()
+          .map((_, row) => {
+            let i = col + row * this.cols;
+            let updating = this.autoUpdate;
+            let isLockedToPlayer = false;
+
+            let lockedIndex = this.lockedToPlayer[`${col},${row}`];
+            if (lockedIndex !== undefined && lockedIndex !== null) {
+              if (0 <= lockedIndex && lockedIndex < this.words.length) {
+                i = lockedIndex;
+                updating = false;
+                isLockedToPlayer = true;
+              } else {
+                i = 0;
+                updating = false;
+              }
+            }
+            let { hueSeed, progressOnClick } = this;
+            return new NumberBlock({
+              words: this.words,
+              sounds: this.sounds,
+              hueSeed,
+              updating,
+              lockedToPlayer: isLockedToPlayer,
+              progressOnClick,
+              row,
+              col,
+              i,
+              x: col * (this.width / this.cols),
+              y: row * (this.height / this.rows),
+              w: this.width / this.cols,
+              h: this.height / this.rows,
+            });
+          })
+      );
+
     if (this.autoUpdate) {
       for (let b of this.blocks) {
         b.updating = !b.lockedToPlayer;
       }
     }
-    if (!!this.narrator) {
-      let sounds = loadSounds(this.narrator, this.domain);
-      Object.assign(this.sounds, sounds);
-      console.log("Puzzle.setup:sounds", this.sounds);
-    }
-    console.log("setup", this);
   }
   keyPressed(key) {
     console.log(key);
     if (key === "n") {
-      this.randomNarrator();
+      this.nextNarrator();
     }
   }
-  randomNarrator() {
-    let otherNarrators = choiceNarrators.filter((n) => n !== this.narrator);
-    this.narrator =
-      otherNarrators[Math.floor(otherNarrators.length * Math.random())];
+  nextNarrator() {
+    let i = this.narrators.indexOf(this.narrator);
+    i++;
+    if (i >= this.narrators.length) {
+      i = 0;
+    }
+    this.narrator = this.narrators[i];
+    this.lang = languageByNarrator[this.narrator];
+    this.words = this.domain[this.lang];
     console.log("new narrator: ", this.narrator);
     this.setup();
   }
@@ -192,7 +212,7 @@ class Puzzle {
         b.deviceShaken();
       }
     } else {
-      this.randomNarrator();
+      this.nextNarrator();
     }
   }
   winConditionMet() {
@@ -214,6 +234,3 @@ class Puzzle {
     return { number: Array.from(finalSet)[0] + 1 };
   }
 }
-
-Puzzle.nullObject = () => new Puzzle({});
-Puzzle.nullObject;
