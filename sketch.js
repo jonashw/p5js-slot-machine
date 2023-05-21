@@ -19,11 +19,11 @@ const puzzleSpecs = [
   {
     domain: {
       "US English":
-        "yes,no,maybe,ok,of course,NO WAY!,I farted!,PICKLES!!!,me name na-na,I'm tired".split(
+        "hi,yes,no,maybe,ok,of course,NO WAY JOSÉ!,I farted!,PICKLES!!!,me name na-na,I'm tired".split(
           ","
         ),
       "US Spanish":
-        "sí,no,tal vez,bueno,porsopuesto,NUNCA!,hice un pedo,pepinos!!!,me llamo nana,tengo sueño".split(
+        "hola,sí,no,tal vez,bueno,porsopuesto,NUNCA JOSE!,hice un pedo,pepinos!!!,me llamo nana,tengo sueño".split(
           ","
         ),
     },
@@ -38,6 +38,25 @@ const puzzleSpecs = [
   },
 ];
 
+var hammer = new Hammer(document.body, { preventDefault: true });
+//hammer.get("swipe").set({
+//  direction: Hammer.DIRECTION_ALL,
+//});
+//hammer.on("swipe", swiped);
+function swiped(event) {
+  let msg = "";
+  console.log(event);
+  if (event.direction == 4) {
+    msg = "you swiped right";
+  } else if (event.direction == 8) {
+    msg = "you swiped up";
+  } else if (event.direction == 16) {
+    msg = "you swiped down";
+  } else if (event.direction == 2) {
+    msg = "you swiped left";
+  }
+  alert(msg);
+}
 /* eslint-disable no-undef, no-unused-vars */
 let puzzles = [];
 let puzzle = undefined;
@@ -145,5 +164,7 @@ windowResized = function () {
   if (!puzzle) {
     return;
   }
+  puzzle.width = width;
+  puzzle.height = height;
   puzzle.setup();
 };

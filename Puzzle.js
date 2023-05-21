@@ -40,6 +40,7 @@ let narratorsByLanguage = {
   Welsh: ["Gwyneth"],
   "Welsh English": ["Geraint"],
 };
+
 let languageByNarrator = Object.fromEntries(
   Object.entries(narratorsByLanguage).flatMap(([lang, ns]) =>
     ns.map((n) => [n, lang])
@@ -47,6 +48,7 @@ let languageByNarrator = Object.fromEntries(
 );
 console.log(languageByNarrator);
 let allNarrators = Object.values(narratorsByLanguage).flatMap((ns) => ns);
+console.log(allNarrators);
 let choiceNarrators = ["British English", "US English", "US Spanish"].flatMap(
   (k) => narratorsByLanguage[k]
 );
@@ -79,7 +81,6 @@ class Puzzle {
     this.words = [1, 2, 3, 4];
     this.narrators = Object.values(narrators).flatMap((ns) => ns);
     this.narrator = this.narrators[0];
-    this.lang = languageByNarrator[this.narrator];
     this.domain = domain;
     this.words = domain[this.lang];
     this.rows = numberOrDefault(rows, 1);
@@ -120,7 +121,7 @@ class Puzzle {
       textAlign(CENTER, CENTER);
       textAlign();
       text(
-        this.narrator + ` (${this.lang}) (${this.hueSeed})`,
+        this.narrator + ` (${this.lang}) (${this.gender}) (${this.age})`,
         width / 2,
         height / 2
       );
@@ -194,18 +195,53 @@ class Puzzle {
     if (key === "n") {
       this.nextNarrator();
     }
+    if (key === "g") {
+      this.nextNarrator("gender");
+    }
+    if (key === "a") {
+      this.nextNarrator("age");
+    }
+    if (key === "l") {
+      this.nextNarrator("lang");
+    }
   }
-  nextNarrator() {
+  nextNarrator(facet) {
+    if (!!facet) {
+      let matchCriteria = Object.entries(voices[this.narrator]).map(
+        ([f, value]) =>
+          (tags) =>
+            f in tags && (f === facet ? tags[f] !== value : tags[f] === value)
+      );
+      let matches = Object.entries(voices).filter(([voice, tags]) =>
+        matchCriteria.every((mc) => mc(tags))
+      );
+      console.log(facet, matches);
+      if (matches.length > 0) {
+        this.narrator = matches[0][0];
+        this.words = this.domain[this.lang];
+        console.log("new narrator: ", this.narrator);
+        this.setup();
+      }
+      return;
+    }
     let i = this.narrators.indexOf(this.narrator);
     i++;
     if (i >= this.narrators.length) {
       i = 0;
     }
     this.narrator = this.narrators[i];
-    this.lang = languageByNarrator[this.narrator];
     this.words = this.domain[this.lang];
     console.log("new narrator: ", this.narrator);
     this.setup();
+  }
+  get lang() {
+    return languageByNarrator[this.narrator];
+  }
+  get gender() {
+    return voices[this.narrator].gender;
+  }
+  get age() {
+    return voices[this.narrator].age;
   }
   deviceShaken() {
     if (this.autoUpdate) {
