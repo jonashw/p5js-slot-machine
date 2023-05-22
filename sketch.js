@@ -67,7 +67,7 @@ let puzzle = undefined;
 
 function setup() {
   fetch(
-    "https://storage.googleapis.com/jonashw-dev-speech-synthesis/all-voices.json?v=1.2"
+    "https://storage.googleapis.com/jonashw-dev-speech-synthesis/index.json?v8"
   )
     .then((response) => response.json())
     .then((voices) => {
@@ -80,7 +80,7 @@ function setup() {
             ...spec,
             width,
             height,
-            voices,
+            voices: Object.fromEntries(voices.map((v) => [v.name, v])),
           })
       );
       console.log(puzzleSpecs);
