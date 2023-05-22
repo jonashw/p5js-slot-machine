@@ -1,58 +1,6 @@
 const numberOrDefault = (value, defaultValue) =>
   isNaN(value) ? defaultValue : value;
 
-let narratorsByLanguage = {
-  Arabic: ["Zeina"],
-  "Australian English": ["Russell", "Nicole"],
-  "Brazilian Portuguese": ["Vitoria", "Camila", "Ricardo"],
-  "British English": ["Emma", "Brian", "Amy"],
-  "Canadian French": ["Chantal"],
-  "Castilian Spanish": ["Conchita", "Lucia", "Enrique"],
-  "Chinese Mandarin": ["Zhiyu"],
-  Danish: ["Naja", "Mads"],
-  Dutch: ["Ruben", "Lotte"],
-  French: ["Celine", "Lea", "Mathieu"],
-  German: ["Hans", "Vicki", "Marlene"],
-  Icelandic: ["Dora", "Karl"],
-  "Indian English": ["Aditi", "Raveena"],
-  Italian: ["Bianca", "Carla", "Giorgio"],
-  Japanese: ["Takumi", "Mizuki"],
-  Korean: ["Seoyeon"],
-  "Mexican Spanish": ["Mia"],
-  Norwegian: ["Liv"],
-  Polish: ["Jacek", "Jan", "Maja", "Ewa"],
-  Portuguese: ["Cristiano", "Ines"],
-  Romanian: ["Carmen"],
-  Russian: ["Maxim", "Tatyana"],
-  Swedish: ["Astrid"],
-  Turkish: ["Filiz"],
-  "US English": [
-    "Salli",
-    "Ivy",
-    "Joey",
-    "Matthew",
-    "Kimberly",
-    "Kendra",
-    "Justin",
-    "Joanna",
-  ],
-  "US Spanish": ["Lupe", "Penelope", "Miguel"],
-  Welsh: ["Gwyneth"],
-  "Welsh English": ["Geraint"],
-};
-
-let languageByNarrator = Object.fromEntries(
-  Object.entries(narratorsByLanguage).flatMap(([lang, ns]) =>
-    ns.map((n) => [n, lang])
-  )
-);
-console.log(languageByNarrator);
-let allNarrators = Object.values(narratorsByLanguage).flatMap((ns) => ns);
-console.log(allNarrators);
-let choiceNarrators = ["British English", "US English", "US Spanish"].flatMap(
-  (k) => narratorsByLanguage[k]
-);
-choiceNarrators = ["Brian", "Salli", "Justin", "Ivy", "Lupe", "Miguel"];
 const loadSounds = (narrator, words) =>
   Object.fromEntries(
     words.map((word) => {
@@ -73,8 +21,10 @@ class Puzzle {
     autoUpdate,
     progressOnClick,
     narrators,
+    voices,
   }) {
     this.sounds = {};
+    this.voices = voices;
     this.narrators = narrators;
     console.log({ narrators });
     this.narrator = "Brian";
@@ -207,12 +157,12 @@ class Puzzle {
   }
   nextNarrator(facet) {
     if (!!facet) {
-      let matchCriteria = Object.entries(voices[this.narrator]).map(
+      let matchCriteria = Object.entries(this.voices[this.narrator]).map(
         ([f, value]) =>
           (tags) =>
             f in tags && (f === facet ? tags[f] !== value : tags[f] === value)
       );
-      let matches = Object.entries(voices).filter(([voice, tags]) =>
+      let matches = Object.entries(this.voices).filter(([voice, tags]) =>
         matchCriteria.every((mc) => mc(tags))
       );
       console.log(facet, matches);
@@ -235,13 +185,13 @@ class Puzzle {
     this.setup();
   }
   get lang() {
-    return languageByNarrator[this.narrator];
+    return this.voices[this.narrator].lang;
   }
   get gender() {
-    return voices[this.narrator].gender;
+    return this.voices[this.narrator].gender;
   }
   get age() {
-    return voices[this.narrator].age;
+    return this.voices[this.narrator].age;
   }
   deviceShaken() {
     if (this.autoUpdate) {

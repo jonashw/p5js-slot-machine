@@ -37,46 +37,33 @@ const puzzleSpecs = [
     progressOnClick: false,
   },
 ];
-
-var hammer = new Hammer(document.body, { preventDefault: true });
-//hammer.get("swipe").set({
-//  direction: Hammer.DIRECTION_ALL,
-//});
-//hammer.on("swipe", swiped);
-function swiped(event) {
-  let msg = "";
-  console.log(event);
-  if (event.direction == 4) {
-    msg = "you swiped right";
-  } else if (event.direction == 8) {
-    msg = "you swiped up";
-  } else if (event.direction == 16) {
-    msg = "you swiped down";
-  } else if (event.direction == 2) {
-    msg = "you swiped left";
-  }
-  alert(msg);
-}
 /* eslint-disable no-undef, no-unused-vars */
 let puzzles = [];
 let puzzle = undefined;
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
-  colorMode(HSB, 100);
-  puzzles = puzzleSpecs.map(
-    (spec) =>
-      new Puzzle({
-        ...spec,
-        width,
-        height,
-      })
-  );
-  console.log(puzzleSpecs);
-  console.log(Hsluv);
-  window.Hsluv = Hsluv;
-  puzzle = puzzles[0];
-  puzzle.setup();
+  fetch(
+    "https://storage.googleapis.com/jonashw-dev-speech-synthesis/voices.json"
+  )
+    .then((response) => response.json())
+    .then((voices) => {
+      createCanvas(windowWidth, windowHeight);
+      colorMode(HSB, 100);
+      puzzles = puzzleSpecs.map(
+        (spec) =>
+          new Puzzle({
+            ...spec,
+            width,
+            height,
+            voices,
+          })
+      );
+      console.log(puzzleSpecs);
+      console.log(Hsluv);
+      window.Hsluv = Hsluv;
+      puzzle = puzzles[0];
+      puzzle.setup();
+    });
 }
 function deviceMoved() {
   //console.log("moved");
