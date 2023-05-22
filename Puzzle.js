@@ -4,7 +4,7 @@ const numberOrDefault = (value, defaultValue) =>
 const loadSounds = (narrator, words) =>
   Object.fromEntries(
     words.map((word) => {
-      let url = `https://us-west1-jonashw-dev-personal-website.cloudfunctions.net/jonashw-dev-speech-synthesis-proxy?lang=${narrator}&msg=${word}`;
+      let url = `https://us-west1-jonashw-dev-personal-website.cloudfunctions.net/jonashw-dev-speech-synthesis-proxy?voice=${narrator}&msg=${word}`;
       //let url = `https://storage.googleapis.com/jonashw-dev-speech-synthesis/${lang}-${word}.mp3`;
       return [word, loadSound(url)];
     })
