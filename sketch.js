@@ -1,21 +1,45 @@
 const everyNthFrame = 50;
-let yesNoSounds = {};
-let range = (from, to) =>
-  Array(to - from + 1)
-    .fill()
-    .map((_, i) => from + i);
-const emojis = ["💀", "🔥", "❤️", "🙂", "😍", "🤡", "👽", "🤘"];
-const randRange = (arr, n) => {
-  let indexes = [];
-  for (let i = 0; i < n; i++) {
-    let index = Math.floor(Math.random() * arr.length);
-    if (indexes.indexOf(index) === -1) {
-      indexes.push(index);
-    }
-  }
-  return indexes.map((i) => arr[i]);
-};
+
 const puzzleSpecs = [
+  {
+    narrators: {
+      "British English": ["Brian"],
+    },
+    domain: {
+      "British English": [
+        "yes, of course.",
+        "no, I don't think so.",
+        "I'll huff and I'll puff",
+        "oh dear.",
+        "I wouldn't do that, if I were you",
+        "something smells stinky",
+        "hey now, please stop eating my spaghetti",
+        "let go! You are going to break it",
+        "go home and eat oatmeal with your papa",
+        "you'd better wash your hands",
+      ],
+    },
+  },
+  {
+    autoUpdate: false,
+    rows: 8,
+    progressOnClick: false,
+    narrators: {
+      "US English": ["Ivy", "Justin", "Salli", "Matthew"],
+    },
+    domain: {
+      "US English": [
+        "Yes",
+        "No",
+        "Not gonna happen",
+        "I don't know",
+        "I'm scared",
+        "I'm Hungry!",
+        "Please",
+        "I'm sorry",
+      ],
+    },
+  },
   {
     domain: {
       "US English":
@@ -43,10 +67,11 @@ let puzzle = undefined;
 
 function setup() {
   fetch(
-    "https://storage.googleapis.com/jonashw-dev-speech-synthesis/voices.json"
+    "https://storage.googleapis.com/jonashw-dev-speech-synthesis/all-voices.json?v=1.2"
   )
     .then((response) => response.json())
     .then((voices) => {
+      console.log({ voices });
       createCanvas(windowWidth, windowHeight);
       colorMode(HSB, 100);
       puzzles = puzzleSpecs.map(
@@ -63,11 +88,34 @@ function setup() {
       window.Hsluv = Hsluv;
       puzzle = puzzles[0];
       puzzle.setup();
+
+      // document.body registers gestures anywhere on the page
+      var hammer = new Hammer(document.body, {
+        preventDefault: true,
+      });
+      hammer.get("swipe").set({
+        direction: Hammer.DIRECTION_ALL,
+      });
+
+      hammer.on("swipe", swiped);
     });
 }
 function deviceMoved() {
   //console.log("moved");
   //puzzle.deviceShaken();
+}
+
+function swiped(event) {
+  console.log(event);
+  if (event.direction == 4) {
+    puzzleNext();
+  } else if (event.direction == 8) {
+    msg = "you swiped up";
+  } else if (event.direction == 16) {
+    msg = "you swiped down";
+  } else if (event.direction == 2) {
+    puzzlePrev();
+  }
 }
 
 function deviceShaken() {
@@ -107,7 +155,27 @@ function keyPressed() {
   if (!puzzle) {
     return;
   }
-  puzzle.keyPressed(key);
+  if (key === "ArrowLeft") {
+    puzzlePrev();
+  } else if (key === "ArrowRight") {
+    puzzleNext();
+  } else {
+    puzzle.keyPressed(key);
+  }
+}
+
+function puzzleNext() {
+  let puzzleIndex = puzzles.indexOf(puzzle);
+  console.log({ puzzleIndex });
+  puzzle = puzzles[puzzleIndex + 1 < puzzles.length ? puzzleIndex + 1 : 0];
+  puzzle.setup();
+}
+
+function puzzlePrev() {
+  let puzzleIndex = puzzles.indexOf(puzzle);
+  console.log({ puzzleIndex });
+  puzzle = puzzles[0 < puzzleIndex ? puzzleIndex - 1 : puzzles.length - 1];
+  puzzle.setup();
 }
 
 function mouseClicked() {

@@ -33,21 +33,21 @@ class Puzzle {
     this.narrator = this.narrators[0];
     this.domain = domain;
     this.words = domain[this.lang];
-    this.rows = numberOrDefault(rows, 1);
+    this.rows = numberOrDefault(rows, domain[Object.keys(domain)[0]].length);
     this.cols = numberOrDefault(cols, 1);
     this.width = numberOrDefault(width, 100);
     this.height = numberOrDefault(height, 100);
 
     this.progressOnClick =
       progressOnClick === null || progressOnClick === undefined
-        ? true
+        ? false
         : !!progressOnClick;
     //fixed: { 1: { 1: 1 } }
     this.lockedToPlayer =
       typeof lockedToPlayer === "object" ? lockedToPlayer : {};
     this.hueSeed = 1.0; //Math.random();
     this.autoUpdate =
-      autoUpdate === null || autoUpdate === undefined ? true : !!autoUpdate;
+      autoUpdate === null || autoUpdate === undefined ? false : !!autoUpdate;
     this.blocks = [];
     this.spec = Object.fromEntries(
       ["width", "cols", "height", "rows", "nMax", "lockedToPlayer"].map((k) => [
@@ -142,6 +142,7 @@ class Puzzle {
   }
   keyPressed(key) {
     console.log(key);
+
     if (key === "n") {
       this.nextNarrator();
     }
