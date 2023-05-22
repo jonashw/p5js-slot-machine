@@ -17,60 +17,53 @@ const randRange = (arr, n) => {
 };
 const puzzleSpecs = [
   {
-    domain: ["yes", "no", "maybe"],
-    narrator: "Amy",
-    rows: 3,
+    domain: {
+      "US English":
+        "hi,yes,no,maybe,ok,of course,NO WAY JOSÉ!,I farted!,PICKLES!!!,me name na-na,I'm tired".split(
+          ","
+        ),
+      "US Spanish":
+        "hola,sí,no,tal vez,bueno,porsopuesto,NUNCA JOSE!,hice un pedo,pepinos!!!,me llamo nana,tengo sueño".split(
+          ","
+        ),
+    },
+    narrators: {
+      "US English": "Ivy Matthew Salli Justin".split(" "),
+      "US Spanish": "Lupe Miguel".split(" "),
+    },
+    rows: 10,
+    cols: 1,
     autoUpdate: false,
     progressOnClick: false,
   },
-  {
-    rows: 2,
-    domain: randRange(emojis, 2),
-    lockedToPlayer: { "0,0": 0 },
-  },
-  {
-    cols: 3,
-    domain: randRange(emojis, 3),
-    autoUpdate: false,
-    lockedToPlayer: { "1,0": 1 },
-  },
-  {
-    rows: 2,
-    domain: ["Yes", "No"],
-    lockedToPlayer: { "0,1": 0 },
-    autoUpdate: false,
-  },
-  {
-    rows: 2,
-    cols: 2,
-    narrator: "Brian",
-    domain: range(1, 4),
-    lockedToPlayer: { "0,1": 2 },
-    autoUpdate: false,
-  },
-  { rows: 3, cols: 3, domain: range(1, 3), lockedToPlayer: { "1,1": 2 } },
 ];
-
 /* eslint-disable no-undef, no-unused-vars */
-let puzzles = [Puzzle.nullObject()];
-let puzzle = puzzles[0];
-let puzzleSpec = puzzle.spec;
+let puzzles = [];
+let puzzle = undefined;
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
-  colorMode(HSB, 100);
-  puzzles = puzzleSpecs.map(
-    (spec) =>
-      new Puzzle({
-        ...spec,
-        width,
-        height,
-      })
-  );
-  console.log(Hsluv);
-  window.Hsluv = Hsluv;
-  puzzle = puzzles[0];
-  puzzle.setup();
+  fetch(
+    "https://storage.googleapis.com/jonashw-dev-speech-synthesis/voices.json"
+  )
+    .then((response) => response.json())
+    .then((voices) => {
+      createCanvas(windowWidth, windowHeight);
+      colorMode(HSB, 100);
+      puzzles = puzzleSpecs.map(
+        (spec) =>
+          new Puzzle({
+            ...spec,
+            width,
+            height,
+            voices,
+          })
+      );
+      console.log(puzzleSpecs);
+      console.log(Hsluv);
+      window.Hsluv = Hsluv;
+      puzzle = puzzles[0];
+      puzzle.setup();
+    });
 }
 function deviceMoved() {
   //console.log("moved");
@@ -78,27 +71,55 @@ function deviceMoved() {
 }
 
 function deviceShaken() {
+  if (!puzzle) {
+    return;
+  }
   puzzle.deviceShaken();
   winStatusInvalidated();
 }
 
 function draw() {
-  update();
-  for (let b of puzzle.blocks) {
-    b.draw();
-  }
-}
-
-function update() {
-  if (frameCount % everyNthFrame !== 0) {
+  if (!puzzle) {
     return;
   }
-  puzzle.update();
+  if (frameCount % everyNthFrame == 0) {
+    puzzle.update();
+  }
+  puzzle.draw();
+}
+
+function touchStarted() {
+  if (!puzzle) {
+    return;
+  }
+  let touch = touches[touches.length - 1];
+  if (!touch) {
+    return;
+  }
+  console.log(touch);
+  pixelTouched(touch.x, touch.y);
+}
+
+function touchEnded() {
+  return false;
+}
+function keyPressed() {
+  if (!puzzle) {
+    return;
+  }
+  puzzle.keyPressed(key);
 }
 
 function mouseClicked() {
+  pixelTouched(mouseX, mouseY);
+}
+
+function pixelTouched(x, y) {
+  if (!puzzle) {
+    return;
+  }
   for (let b of puzzle.blocks) {
-    if (!b.containsPoint(mouseX, mouseY)) {
+    if (!b.containsPoint(x, y)) {
       continue;
     }
     b.mouseClicked();
@@ -107,6 +128,9 @@ function mouseClicked() {
 }
 
 function winStatusInvalidated() {
+  if (!puzzle) {
+    return;
+  }
   let win = puzzle.tryGetWin();
   if (!!win) {
     puzzle.winAnimation();
@@ -124,4 +148,10 @@ function winStatusInvalidated() {
 // This Redraws the Canvas when resized
 windowResized = function () {
   resizeCanvas(windowWidth, windowHeight);
+  if (!puzzle) {
+    return;
+  }
+  puzzle.width = width;
+  puzzle.height = height;
+  puzzle.setup();
 };
